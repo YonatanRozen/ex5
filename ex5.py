@@ -42,22 +42,23 @@ def enrollment_numbers(input_json_path, output_file_path):
 
 
 def courses_for_lecturers(json_directory_path, output_json_path):
-    in_files = get_json_files(json_directory_path)
-    out_file = open(output_json_path, 'w')
-    all_lecturers = {}
-    for filename in in_files:
-        file = open(filename, 'r')
-        data = json.load(file)
-        all_lecturers.update(get_all_lecturers(data))
-        keys = list(all_lecturers.keys())
-        for key in keys:
-            info = get_lecturer_course_list(data, key)
-            for course in info:
-                if course not in all_lecturers[key]:
-                    all_lecturers[key].append(course)
-        file.close()
-    json.dump(all_lecturers, out_file, indent=4)
-    out_file.close()
+    files = os.listdir(json_directory_path)
+    dict_lecturers = {}
+    for file in files:
+        if file.endswith(".json"):
+            current_file = open(json_directory_path + "\\" + file, "r")
+            data = json.load(current_file)
+            for course in data:
+                for lecturer in data[course]["lecturers"]:
+                    if lecturer in dict_lecturers:
+                        if data[course]["course_name"] not in dict_lecturers[lecturer]:
+                            dict_lecturers[lecturer].append(data[course]["course_name"])
+                    else:
+                        dict_lecturers[lecturer] = [data[course]["course_name"]]
+            current_file.close()
+    output_file = open(output_json_path, "w")
+    json.dump(dict_lecturers, output_file, indent=4)
+    output_file.close()
 
 
 def get_all_lecturers(data):
